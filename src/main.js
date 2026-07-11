@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import GUI from 'lil-gui';
 import { vertexShader, fragmentShader } from './shaders.js';
 
 async function loadHeightmap() {
@@ -48,7 +49,8 @@ async function init() {
     uniforms: {
       uHeight: { value: buildHeightTexture(heightmap) },
       uColor: { value: colorTex },
-      uExaggeration: { value: 60.0 },
+      uKLand: { value: 60.0 },
+      uKOcean: { value: 25.0 },
     },
   });
   scene.add(new THREE.Mesh(new THREE.SphereGeometry(1, 960, 480), material));
@@ -57,6 +59,10 @@ async function init() {
   controls.enableDamping = true;
   controls.minDistance = 1.2;
   controls.maxDistance = 10;
+
+  const gui = new GUI({ title: 'Exaggeration' });
+  gui.add(material.uniforms.uKLand, 'value', 0, 150, 1).name('land ×');
+  gui.add(material.uniforms.uKOcean, 'value', 0, 150, 1).name('ocean ×');
 
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
