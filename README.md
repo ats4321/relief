@@ -15,8 +15,7 @@ Elevation is hard to *perceive* on flat maps. Color scales encode it, but readin
 
 ## Screenshot
 
-<!-- TODO: replace with a screenshot/GIF of the displaced globe -->
-*Screenshot coming soon.*
+![The displaced globe: the Himalayas and Tibetan Plateau visibly bulge out of the sphere](docs/screenshot.jpg)
 
 ## Setup
 
