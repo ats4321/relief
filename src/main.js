@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import GUI from 'lil-gui';
 import { vertexShader, fragmentShader } from './shaders.js';
+import { runSanityChecks } from './sanity.js';
 
 async function loadHeightmap() {
   const meta = await (await fetch('/data/heightmap_meta.json')).json();
@@ -29,6 +30,7 @@ function buildHeightTexture({ meta, int16 }) {
 
 async function init() {
   const heightmap = await loadHeightmap();
+  runSanityChecks(heightmap, { kLand: 60, kOcean: 25 });
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -63,6 +65,8 @@ async function init() {
   const gui = new GUI({ title: 'Exaggeration' });
   gui.add(material.uniforms.uKLand, 'value', 0, 150, 1).name('land ×');
   gui.add(material.uniforms.uKOcean, 'value', 0, 150, 1).name('ocean ×');
+
+  window.__globe = { camera, controls, material }; // console/debug handle
 
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
