@@ -1,0 +1,11 @@
+{
+  "width": 1440,
+  "height": 720,
+  "dtype": "int16",
+  "row0": "north",
+  "col0_lon": -180,
+  "cell_deg": 0.25,
+  "min_m": -9814,
+  "max_m": 6156,
+  "source": "ETOPO 2022 60s (NOAA), stride-5 OpenDAP subset, 3x3 block mean"
+}

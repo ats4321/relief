@@ -1,7 +1,36 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+async function loadHeightmap() {
+  const meta = await (await fetch('/data/heightmap_meta.json')).json();
+  const buf = await (await fetch(`/data/heightmap_${meta.width}x${meta.height}.bin`)).arrayBuffer();
+  return { meta, int16: new Int16Array(buf) };
+}
+
+function buildHeightTexture({ meta, int16 }) {
+  const { width, height } = meta;
+  // bin is row 0 = north; GL texture rows go bottom-up, so flip vertically
+  // (matches the flipY=true orientation of the loaded color JPEG)
+  const data = new Float32Array(width * height);
+  for (let r = 0; r < height; r++) {
+    const src = r * width;
+    const dst = (height - 1 - r) * width;
+    for (let c = 0; c < width; c++) data[dst + c] = int16[src + c];
+  }
+  const tex = new THREE.DataTexture(data, width, height, THREE.RedFormat, THREE.FloatType);
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  tex.wrapS = THREE.RepeatWrapping; // antimeridian seam
+  tex.needsUpdate = true;
+  return tex;
+}
+
 async function init() {
+  const heightmap = await loadHeightmap();
+  console.log('heightmap loaded:', heightmap.meta);
+  const heightTex = buildHeightTexture(heightmap);
+  void heightTex; // consumed by the displacement shader in the next step
+
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -40,6 +69,6 @@ init().catch((err) => {
   console.error(err);
   document.body.insertAdjacentHTML(
     'beforeend',
-    `<pre style="position:fixed;top:8px;left:8px;color:#f66;font:13px monospace;white-space:pre-wrap">${err.message}</pre>`
+    `<pre style="position:fixed;top:8px;left:8px;color:#f66;font:13px monospace;white-space:pre-wrap">${err.message}\n\nDid you run: python tools/prepare_heightmap.py ?</pre>`
   );
 });
