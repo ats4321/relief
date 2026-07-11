@@ -66,7 +66,7 @@ async function init() {
   gui.add(material.uniforms.uKLand, 'value', 0, 150, 1).name('land ×');
   gui.add(material.uniforms.uKOcean, 'value', 0, 150, 1).name('ocean ×');
 
-  window.__globe = { camera, controls, material }; // console/debug handle
+  window.__globe = { camera, controls, material, renderer, scene }; // console/debug handle
 
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
