@@ -13,9 +13,31 @@ Elevation is hard to *perceive* on flat maps. Color scales encode it, but readin
 - **GLSL vertex shader displacement** — each vertex is pushed along its normal by `radius = 1 + (elevation / R_earth) × exaggeration`, sampled from the heightmap texture on the GPU.
 - **Piecewise-linear exaggeration** — separate factors for land and ocean, because mean ocean depth (~3,700 m) would otherwise visually dominate mean land elevation (~840 m).
 
+## Screenshot
+
+<!-- TODO: replace with a screenshot/GIF of the displaced globe -->
+*Screenshot coming soon.*
+
 ## Setup
 
-Early scaffolding — setup instructions will land here as the pieces come together.
+The heightmap and color texture are committed, so the app runs with Node alone:
+
+```bash
+npm install
+npm run dev        # Vite dev server at http://localhost:5173
+```
+
+To regenerate the heightmap from source data (optional — requires Python 3 + numpy):
+
+```bash
+python3 -m venv tools/.venv
+tools/.venv/bin/pip install numpy
+tools/.venv/bin/python tools/prepare_heightmap.py
+```
+
+The script fetches a strided subset of NOAA's ETOPO 2022 60-arcsec grid via OpenDAP (~37 MB, cached in `tools/cache/`), block-means it to 0.25°, and writes `public/data/heightmap_1440x720.bin` + meta JSON. On startup the app logs a sanity table (New Orleans, Denver, Everest, Challenger Deep) showing each landmark's elevation and computed radius offset, and throws if any value is implausible.
+
+Use the **Exaggeration** panel (top right) to tune the land and ocean factors live.
 
 ## License
 
