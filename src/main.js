@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { vertexShader, fragmentShader } from './shaders.js';
 
 async function loadHeightmap() {
   const meta = await (await fetch('/data/heightmap_meta.json')).json();
@@ -27,9 +28,6 @@ function buildHeightTexture({ meta, int16 }) {
 
 async function init() {
   const heightmap = await loadHeightmap();
-  console.log('heightmap loaded:', heightmap.meta);
-  const heightTex = buildHeightTexture(heightmap);
-  void heightTex; // consumed by the displacement shader in the next step
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -41,11 +39,18 @@ async function init() {
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 100);
   camera.position.set(0, 0.8, 3.0);
 
-  // no colorSpace set: pass sRGB texel values straight through unlit
+  // no colorSpace set: pass sRGB texel values straight through the unlit shader
   const colorTex = await new THREE.TextureLoader().loadAsync('/textures/earth_color.jpg');
-  const material = new THREE.MeshBasicMaterial({ map: colorTex });
 
-  // segment count far exceeds the 1440x720 heightmap grid, ready for displacement
+  const material = new THREE.ShaderMaterial({
+    vertexShader,
+    fragmentShader,
+    uniforms: {
+      uHeight: { value: buildHeightTexture(heightmap) },
+      uColor: { value: colorTex },
+      uExaggeration: { value: 60.0 },
+    },
+  });
   scene.add(new THREE.Mesh(new THREE.SphereGeometry(1, 960, 480), material));
 
   const controls = new OrbitControls(camera, renderer.domElement);
